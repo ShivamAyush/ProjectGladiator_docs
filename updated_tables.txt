@@ -1,0 +1,129 @@
+CREATE TABLE tb1_Visitors
+(
+    visitor_id Number(12),
+    service_ref_no Number(12),
+    first_name VARCHAR2(20) NOT NULL,
+    last_name VARCHAR2(20) NOT NULL,
+    middle_name VARCHAR2(20),
+    age NUMBER(3) NOT NULL check(age > 0 AND age < 200),
+    gender VARCHAR2(6) NOT NULL check(gender = 'Male' OR gender = 'Female' OR gender = 'Others'),
+    email VARCHAR2(40) UNIQUE NOT NULL,
+    phone_number VARCHAR2(10) UNIQUE NOT NULL check(phone_number LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    aadhar_no VARCHAR2(12) UNIQUE NOT NULL check(aadhar_no LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    local_address VARCHAR2(50) NOT NULL,
+    region_id_local NUMBER(6),
+    permanent_address VARCHAR2(50) NOT NULL,
+    region_id_permanent NUMBER(6),
+    occupation_type VARCHAR2(10) check(occupation_type='self' OR occupation_type='service' OR occupation_type='Education_instruction' OR occupation_type='Management' OR occupation_type='Business'),
+    source_of_income VARCHAR2(100) NOT NULL,
+    gross_annual_income DECIMAL(12,2) NOT NULL,
+    debit_card_status VARCHAR2(11) NOT NULL check(debit_card_status = 'Required' OR debit_card_status = 'NotRequired'),
+    net_banking_status VARCHAR2(11) NOT NULL check(net_banking_status = 'Required' OR net_banking_status = 'NotRequired'),
+    PRIMARY KEY (visitor_id),
+    FOREIGN KEY (service_ref_no) REFERENCES tb1_Visitor_status (service_ref_no),
+    FOREIGN KEY (region_id_local) REFERENCES Regions(region_id),
+    FOREIGN KEY (region_id_permanent) REFERENCES Regions(region_id)
+);
+
+CREATE TABLE tb1_Visitor_status
+(
+    service_ref_no Number(15) PRIMARY KEY,
+    status VARCHAR(8) NOT NULL CHECK(status = 'pending' OR status = 'accepted' OR status = 'rejected'),
+    verified VARCHAR(8) NOT NULL CHECK(verified = 'pending' OR verified = 'accepted' OR verified = 'rejected')
+);
+
+CREATE TABLE tb1_Regions
+(
+    region_id Number(6) PRIMARY KEY,
+    city char(30) NOT NULL,
+    pincode char(6) NOT NULL check(pincode LIKE '[0-9][0-9][0-9][0-9][0-9][0-9]'),
+    state char(30) NOT NULL
+);
+
+CREATE TABLE tb1_Customers
+(
+    customer_id NUMBER(12),
+    first_name VARCHAR2(20) NOT NULL,
+    last_name VARCHAR2(20) NOT NULL,
+    middle_name VARCHAR2(20),
+    age NUMBER(3) NOT NULL check(age > 0 AND age < 200),
+    gender VARCHAR2(6) NOT NULL check(gender = 'Male' OR gender = 'Female' OR gender = 'Others'),
+    email VARCHAR2(40) UNIQUE NOT NULL,
+    phone_number VARCHAR2(10) UNIQUE NOT NULL check(phone_number LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    aadhar_no VARCHAR2(12) UNIQUE NOT NULL check(aadhar_no LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    local_address VARCHAR2(50) NOT NULL,
+    region_id_local NUMBER(6),
+    permanent_address VARCHAR2(50) NOT NULL,
+    region_id_permanent NUMBER(6),
+    occupation_type VARCHAR2(10) check(occupation_type='self' OR occupation_type='service' OR occupation_type='Education_instruction' OR occupation_type='Management' OR occupation_type='Business'),
+    source_of_income VARCHAR2(100) NOT NULL,
+    gross_annual_income DECIMAL(12,2) NOT NULL,
+    debit_card_status VARCHAR2(11) NOT NULL check(debit_card_status = 'Required' OR debit_card_status = 'NotRequired'),
+    net_banking_status VARCHAR2(11) NOT NULL check(net_banking_status = 'Required' OR net_banking_status = 'NotRequired'),
+    login_password VARCHAR(50) NOT NULL,
+    transaction_password VARCHAR(50) NOT NULL,
+    PRIMARY KEY (customer_id),
+    FOREIGN KEY (region_id_local) REFERENCES Regions(region_id),
+    FOREIGN KEY (region_id_permanent) REFERENCES Regions(region_id)
+);
+
+CREATE TABLE tb1_Accounts
+(
+    account_no NUMBER(15),
+    customer_id NUMBER(12),
+    account_type VARCHAR2(8) NOT NULL CHECK(account_type = 'Savings' AND account_type = 'Current' AND account_type = 'Salaried'),
+    account_balance DECIMAL(12,2) NOT NULL,
+    account_status VARCHAR2(8) NOT NULL CHECK(account_status = 'Active' AND account_status = 'Inactive'),
+    PRIMARY KEY (account_no),
+    FOREIGN KEY (customer_id) REFERENCES tb1_Customers(customer_id)
+);
+
+CREATE TABLE tb1_Transactions
+(
+    transaction_id NUMBER(18),
+    customer_id NUMBER(12),
+    from_account_no NUMBER(15),
+    to_account_no NUMBER(15),
+    transaction_amount DECIMAL(10,2) NOT NULL CHECK(transaction_amount > 0),
+    transaction_date DATE NOT NULL,
+    transaction_time TIMESTAMP NOT NULL,
+    transaction_type VARCHAR(6) NOT NULL CHECK(transaction_type = 'Credit' AND transaction_type = 'Debit'),
+    transaction_method VARCHAR(4) NOT NULL CHECK(transaction_method = 'NEFT' AND transaction_method = 'RTGS' AND transaction_method = 'IMPS'),
+    opening_balance DECIMAL(12,2) NOT NULL CHECK(opening_balance > 0),
+    closing_balance DECIMAL(12,2) NOT NULL CHECK(closing_balance > 0),
+    transaction_status VARCHAR(1) NOT NULL CHECK(transaction_status = 'Success' AND transaction_status = 'Failed'),
+    PRIMARY KEY (transaction_id),
+    FOREIGN KEY (customer_id) REFERENCES tb1_Customers(customer_id),
+    FOREIGN KEY (from_account_no) REFERENCES tb1_Accounts(account_no),
+    FOREIGN KEY (to_account_no) REFERENCES tb1_Accounts(account_no)
+);
+
+CREATE TABLE tb1_Beneficiarys
+(
+    beneficiary_id NUMBER(6),
+    customer_id NUMBER(12),
+    beneficiary_name VARCHAR(50) NOT NULL,
+    account_no NUMBER(15),
+    beneficiary_nick_name VARCHAR2(20) NOT NULL
+);
+
+CREATE TABLE tb1_Admins
+(
+    admin_id NUMBER(21),
+    admin_password VARCHAR(50) NOT NULL,
+    admin_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE tb1_Cust_rep
+(
+    cust_rep_id NUMBER(21),
+    cust_rep_password VARCHAR(50) NOT NULL,
+    cust_rep_name VARCHAR(50) NOT NULL
+);
+
+DROP TABLE tb1_Visitors;
+DROP TABLE tb1_Visitor_status;
+DROP TABLE tb1_Customers;
+DROP TABLE tb1_Accounts;
+DROP TABLE tb1_Transactions;
+DROP TABLE tb1_Beneficiarys;
